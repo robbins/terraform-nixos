@@ -12,7 +12,7 @@ buildArgs=(
 profile=/nix/var/nix/profiles/system
 # will be set later
 sshOpts=(
-  -o "ControlMaster=auto"
+  -o "ControlMaster=no"
   -o "ControlPersist=60"
   # Avoid issues with IP re-use. This disable TOFU security.
   -o "StrictHostKeyChecking=no"
