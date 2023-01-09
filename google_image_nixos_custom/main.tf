@@ -68,6 +68,7 @@ resource "google_storage_bucket_object" "nixos" {
   lifecycle {
     create_before_destroy = true
   }
+  skip_destroy = true
 }
 
 resource "google_compute_image" "nixos" {
