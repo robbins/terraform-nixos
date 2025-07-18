@@ -111,6 +111,12 @@ variable "delete_older_than" {
   default     = "+1"
 }
 
+variable "nix_signing_private_key" {
+  type        = string
+  description = "Content of private key used to sign build results"
+  default     = ""
+}
+
 # --------------------------------------------------------------------------
 
 locals {
@@ -129,6 +135,7 @@ locals {
   ssh_private_key      = local.ssh_private_key_file == "-" ? var.ssh_private_key : file(local.ssh_private_key_file)
   ssh_agent            = var.ssh_agent == null ? (local.ssh_private_key != "") : var.ssh_agent
   build_on_target      = data.external.nixos-instantiate.result["currentSystem"] != var.target_system ? true : tobool(var.build_on_target)
+  nix_signing_private_key = var.nix_signing_private_key == "" ? "-" : var.nix_signing_private_key
 }
 
 # used to detect changes in the configuration
@@ -196,6 +203,7 @@ resource "null_resource" "deploy_nixos" {
       var.target_port,
       local.build_on_target,
       local.ssh_private_key == "" ? "-" : local.ssh_private_key,
+      local.nix_signing_private_key == "" ? "-" : local.nix_signing_private_key,
       "switch",
       var.delete_older_than,
       ],

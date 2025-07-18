@@ -32,9 +32,10 @@ targetHost="$3"
 targetPort="$4"
 buildOnTarget="$5"
 sshPrivateKey="$6"
-action="$7"
-deleteOlderThan="$8"
-shift 8
+nixSigningPrivateKey="$7"
+action="$8"
+deleteOlderThan="$9"
+shift 9
 
 # remove the last argument
 set -- "${@:1:$(($# - 1))}"
@@ -50,6 +51,12 @@ if [[ -n "${sshPrivateKey}" && "${sshPrivateKey}" != "-" ]]; then
   echo "$sshPrivateKey" > "$sshPrivateKeyFile"
   chmod 0700 "$sshPrivateKeyFile"
   sshOpts+=( -o "IdentityFile=${sshPrivateKeyFile}" )
+fi
+
+if [[ -n "${nixSigningPrivateKey}" && "${nixSigningPrivateKey}" != "-" ]]; then
+  nixSigningPrivateKeyFile="$workDir/nix_signing_key"
+  echo "$nixSigningPrivateKey" > "$nixSigningPrivateKeyFile"
+  chmod 0700 "$nixSigningPrivateKeyFile"
 fi
 
 ### Functions ###
@@ -113,6 +120,8 @@ else
   # Build derivation
   log "building on deployer"
   outPath=$(nix-store --realize "$drvPath" "${buildArgs[@]}")
+
+  nix store sign --key-file "$nixSigningPrivateKeyFile" "$outPath"
 
   # Upload build results
   log "uploading build results"
